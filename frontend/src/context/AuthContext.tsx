@@ -38,20 +38,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const userData = await auth.getProfile();
-          setState({
-            user: userData,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-        } else {
-          setState(prev => ({ ...prev, isLoading: false }));
-        }
+        const { user: userData } = await auth.getUser();
+        setState({
+          user: userData,
+          isAuthenticated: true,
+          isLoading: false,
+        });
       } catch (error) {
         console.error('Auth check failed:', error);
-        localStorage.removeItem('token');
         setState({
           user: null,
           isAuthenticated: false,
@@ -66,14 +60,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async ({ email, password }: LoginCredentials) => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const { token, user } = await auth.login(email, password);
-      localStorage.setItem('token', token);
+      const { user } = await auth.login(email, password);
       setState({
         user,
         isAuthenticated: true,
         isLoading: false,
       });
-      toast.success(`Welcome back, ${user.name}!`);
+      toast.success(`Welcome back, ${user.username}!`);
       navigate('/dashboard');
     } catch (error: any) {
       setState(prev => ({ ...prev, isLoading: false }));
@@ -86,14 +79,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async ({ name, email, password }: RegisterCredentials) => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const { token, user } = await auth.register(name, email, password);
-      localStorage.setItem('token', token);
+      const { user } = await auth.register(name, email, password);
       setState({
         user,
         isAuthenticated: true,
         isLoading: false,
       });
-      toast.success(`Welcome to Riyadh Elite, ${user.name}!`);
+      toast.success(`Welcome to Riyadh Elite, ${user.username}!`);
       navigate('/dashboard');
     } catch (error: any) {
       setState(prev => ({ ...prev, isLoading: false }));
@@ -104,64 +96,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loginAdmin = async ({ email, password }: LoginCredentials) => {
-    setState(prev => ({ ...prev, isLoading: true }));
-    try {
-      const { token, user } = await auth.adminLogin(email, password);
-      localStorage.setItem('token', token);
-      setState({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      toast.success(`Welcome back, ${user.name}!`);
-    } catch (error: any) {
-      setState(prev => ({ ...prev, isLoading: false }));
-      const errorMessage = error.response?.data?.error || 'Admin login failed';
-      toast.error(errorMessage);
-      throw error;
-    }
+    await login({ email, password });
   };
 
   const loginHost = async ({ email, password }: LoginCredentials) => {
-    setState(prev => ({ ...prev, isLoading: true }));
-    try {
-      const { token, user } = await auth.hostLogin(email, password);
-      localStorage.setItem('token', token);
-      setState({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      toast.success(`Welcome back, ${user.name}!`);
-    } catch (error: any) {
-      setState(prev => ({ ...prev, isLoading: false }));
-      const errorMessage = error.response?.data?.error || 'Host login failed';
-      toast.error(errorMessage);
-      throw error;
-    }
+    await login({ email, password });
   };
 
   const loginModerator = async ({ email, password }: LoginCredentials) => {
-    setState(prev => ({ ...prev, isLoading: true }));
-    try {
-      const { token, user } = await auth.moderatorLogin(email, password);
-      localStorage.setItem('token', token);
-      setState({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      toast.success(`Welcome back, ${user.name}!`);
-    } catch (error: any) {
-      setState(prev => ({ ...prev, isLoading: false }));
-      const errorMessage = error.response?.data?.error || 'Moderator login failed';
-      toast.error(errorMessage);
-      throw error;
-    }
+    await login({ email, password });
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
+    try {
+      await auth.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     setState({
       user: null,
       isAuthenticated: false,

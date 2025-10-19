@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -9,23 +9,13 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 10000,
+  withCredentials: true,
 });
 
-// Add token to requests if it exists
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Handle response errors globally
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
       window.location.href = '/login';
       toast.error('Session expired. Please login again.');
     } else if (error.response?.status === 403) {
@@ -46,43 +36,30 @@ api.interceptors.response.use(
 );
 
 export const auth = {
-  register: async (name: string, email: string, password: string) => {
-    const response = await api.post('/auth/register', { name, email, password });
+  register: async (username: string, email: string, password: string, firstName?: string, lastName?: string) => {
+    const response = await api.post('/auth/register/', {
+      username,
+      email,
+      password,
+      password2: password,
+      first_name: firstName || '',
+      last_name: lastName || ''
+    });
     return response.data;
   },
 
-  login: async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
+  login: async (username: string, password: string) => {
+    const response = await api.post('/auth/login/', { username, password });
     return response.data;
   },
 
-  adminLogin: async (email: string, password: string) => {
-    const response = await api.post('/auth/admin-login', { email, password });
+  logout: async () => {
+    const response = await api.post('/auth/logout/');
     return response.data;
   },
 
-  hostLogin: async (email: string, password: string) => {
-    const response = await api.post('/auth/host-login', { email, password });
-    return response.data;
-  },
-
-  moderatorLogin: async (email: string, password: string) => {
-    const response = await api.post('/auth/moderator-login', { email, password });
-    return response.data;
-  },
-
-  getProfile: async () => {
-    const response = await api.get('/auth/profile');
-    return response.data;
-  },
-
-  updateProfile: async (data: { name?: string; avatar?: string }) => {
-    const response = await api.put('/auth/profile', data);
-    return response.data;
-  },
-
-  getDashboardData: async () => {
-    const response = await api.get('/auth/dashboard');
+  getUser: async () => {
+    const response = await api.get('/auth/user/');
     return response.data;
   },
 };
