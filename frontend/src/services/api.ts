@@ -66,64 +66,64 @@ export const auth = {
 
 export const tournaments = {
   getAll: async () => {
-    const response = await api.get('/tournaments');
+    const response = await api.get('/tournaments/');
     return response.data;
   },
 
   getById: async (id: string) => {
-    const response = await api.get(`/tournaments/${id}`);
+    const response = await api.get(`/tournaments/${id}/`);
     return response.data;
   },
 
-  create: async (data: { 
-    title: string; 
+  create: async (data: {
+    title: string;
     game: string;
-    description: string; 
+    description: string;
     start_date: string;
     end_date: string;
     prize_pool?: string;
     max_participants?: number;
   }) => {
-    const response = await api.post('/tournaments', data);
+    const response = await api.post('/tournaments/', data);
     return response.data;
   },
 
   join: async (tournamentId: string) => {
-    const response = await api.post(`/tournaments/${tournamentId}/join`);
+    const response = await api.post(`/tournaments/${tournamentId}/join/`);
     return response.data;
   },
 
   leave: async (tournamentId: string) => {
-    const response = await api.delete(`/tournaments/${tournamentId}/leave`);
+    const response = await api.delete(`/tournaments/${tournamentId}/leave/`);
     return response.data;
   },
 
   getUserTournaments: async () => {
-    const response = await api.get('/tournaments/user');
+    const response = await api.get('/tournaments/user/');
     return response.data;
   },
 };
 
 export const rewards = {
   getAll: async () => {
-    const response = await api.get('/rewards');
+    const response = await api.get('/rewards/');
     return response.data;
   },
 
   claim: async (rewardId: string) => {
-    const response = await api.post('/rewards/claim', { rewardId });
+    const response = await api.post('/rewards/claim/', { rewardId });
     return response.data;
   },
 
   getUserRewards: async () => {
-    const response = await api.get('/rewards/user');
+    const response = await api.get('/rewards/user/');
     return response.data;
   },
 };
 
 export const games = {
   getAll: async () => {
-    const response = await api.get('/games');
+    const response = await api.get('/games/');
     return response.data;
   },
 
@@ -134,12 +134,19 @@ export const games = {
     description?: string;
     image_url?: string;
   }) => {
-    const response = await api.post('/games', data);
+    const response = await api.post('/games/', data);
     return response.data;
   },
 
   updateStatus: async (gameId: string, status: string) => {
-    const response = await api.put(`/games/${gameId}/status`, { status });
+    const response = await api.put(`/games/${gameId}/status/`, { status });
+    return response.data;
+  },
+};
+
+export const dashboard = {
+  getData: async () => {
+    const response = await api.get('/dashboard/');
     return response.data;
   },
 };
