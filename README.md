@@ -1,6 +1,6 @@
 # Riyadah Elite - Full-Stack Gaming Platform
 
-A comprehensive gaming platform built with React (Vite + Tailwind) frontend and Django backend, integrated with Supabase for data persistence.
+A comprehensive gaming platform built with React (Vite + Tailwind) frontend and Django backend.
 
 ## Tech Stack
 
@@ -19,9 +19,7 @@ A comprehensive gaming platform built with React (Vite + Tailwind) frontend and 
 - SQLite3 database
 
 ### Database
-- Supabase (PostgreSQL)
-- Row Level Security (RLS) enabled
-- Tables: profiles, tournaments, tournament_participants
+- SQLite3
 
 ## Project Structure
 
@@ -57,19 +55,21 @@ A comprehensive gaming platform built with React (Vite + Tailwind) frontend and 
 - Node.js 18+
 - npm or pnpm
 
-### Backend Setup
+### Database & Backend Setup
 
-1. Install Python dependencies:
+1. Run the database setup script (first time only):
 ```bash
-python3 -m pip install --user -r requirements.txt
+chmod +x setup-database.sh
+./setup-database.sh
 ```
 
-2. Run Django migrations:
-```bash
-python3 manage.py migrate
-```
+This script will:
+- Install Python dependencies
+- Create database migrations
+- Apply migrations to SQLite3
+- Prompt you to create a superuser account
 
-3. Start the Django development server:
+2. Start the Django development server:
 ```bash
 python3 manage.py runserver 127.0.0.1:8000
 ```
@@ -80,6 +80,28 @@ Or use the convenience script:
 ```
 
 The backend API will be available at `http://127.0.0.1:8000/api/`
+
+### Seed Sample Data (Optional)
+
+To populate the database with sample data for testing:
+```bash
+python3 seed_data.py
+```
+
+This creates:
+- Test users (testuser/testpass123, admin/admin123, host/host123)
+- Sample tournaments
+- Sample rewards
+- Sample games
+
+### Admin Panel
+
+Access the Django admin panel at `http://127.0.0.1:8000/admin/` to:
+- Manage users and profiles
+- Create/modify tournaments
+- Add rewards
+- Review submitted games
+- View user activities
 
 ### Frontend Setup
 
@@ -134,31 +156,7 @@ POST /api/auth/login/
 
 ## Database Schema
 
-### Profiles Table
-- `id` (uuid, primary key)
-- `username` (text, unique)
-- `email` (text)
-- `first_name` (text)
-- `last_name` (text)
-- `role` (text, default: 'player')
-- `created_at` (timestamptz)
-- `updated_at` (timestamptz)
-
-### Tournaments Table
-- `id` (uuid, primary key)
-- `title` (text)
-- `description` (text)
-- `game` (text)
-- `start_date` (timestamptz)
-- `prize_pool` (numeric)
-- `status` (text, default: 'upcoming')
-- `created_at` (timestamptz)
-
-### Tournament Participants Table
-- `id` (uuid, primary key)
-- `tournament_id` (uuid, references tournaments)
-- `user_id` (uuid, references profiles)
-- `registered_at` (timestamptz)
+Django models defined in `authapp/models.py` using SQLite3.
 
 ## Features
 
@@ -212,7 +210,6 @@ CORS credentials are enabled for session authentication.
 
 ## Security Features
 
-- Row Level Security (RLS) on all Supabase tables
 - Session-based authentication
 - CSRF protection
 - Password validation

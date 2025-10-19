@@ -1,23 +1,19 @@
-"""
-URL configuration for backend project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
+from authapp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('authapp.urls')),
+    path('api/tournaments/', views.tournament_list, name='tournament-list'),
+    path('api/tournaments/<int:pk>/', views.tournament_detail, name='tournament-detail'),
+    path('api/tournaments/<int:pk>/join/', views.tournament_join, name='tournament-join'),
+    path('api/tournaments/<int:pk>/leave/', views.tournament_leave, name='tournament-leave'),
+    path('api/tournaments/user/', views.user_tournaments, name='user-tournaments'),
+    path('api/rewards/', views.reward_list, name='reward-list'),
+    path('api/rewards/claim/', views.reward_claim, name='reward-claim'),
+    path('api/rewards/user/', views.user_rewards, name='user-rewards'),
+    path('api/games/', views.game_list, name='game-list'),
+    path('api/games/<int:pk>/status/', views.game_update_status, name='game-update-status'),
+    path('api/dashboard/', views.dashboard_data, name='dashboard-data'),
 ]
