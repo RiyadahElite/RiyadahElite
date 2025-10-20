@@ -50,16 +50,22 @@ const Register = () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    try {
-      await register({ name: username.trim(), email: email.trim(), password });
-      toast.success('Account created successfully!');
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      // Error is already handled by the API interceptor
-    } finally {
-      setIsLoading(false);
-    }
+try {
+  // Use 'name' instead of 'username' to match RegisterCredentials type
+  await register({
+    name: username.trim(),
+    email: email.trim(),
+    password: password,
+  });
+
+  toast.success('Account created successfully!');
+  navigate('/dashboard');
+} catch (error: any) {
+  console.error('Registration error:', error);
+  // Error is already handled by the API interceptor
+} finally {
+  setIsLoading(false);
+}
   };
 
   return (

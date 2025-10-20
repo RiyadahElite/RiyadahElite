@@ -21,7 +21,7 @@ const Login = () => {
 
   const validateForm = () => {
     if (!email.trim()) {
-      toast.error('Email is required');
+      toast.error('Username is required');
       return false;
     }
     if (!password) {
@@ -38,28 +38,32 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      await login({ email: email.trim(), password });
+  // Map email input to username for backend while keeping types safe
+  await login({
+    email: email.trim(), // keep the property name as expected by the LoginCredentials type
+    password,
+    });
 
-      if (rememberMe) {
-        localStorage.setItem('rememberedEmail', email);
-      } else {
-        localStorage.removeItem('rememberedEmail');
-      }
-
-      const from = (location.state as any)?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
-    } catch (error: any) {
-      console.error('Login error:', error);
-      // Error is already handled by the API interceptor
-    } finally {
-      setIsLoading(false);
+    if (rememberMe) {
+      localStorage.setItem('rememberedUsername', email);
+    } else {
+      localStorage.removeItem('rememberedUsername');
     }
-  };
+
+    const from = (location.state as any)?.from?.pathname || '/dashboard';
+    navigate(from, { replace: true });
+  } catch (error: any) {
+    console.error('Login error:', error);
+    // Error is already handled by the API interceptor
+  } finally {
+    setIsLoading(false);
+  }
+    };
 
   useEffect(() => {
-    const rememberedEmail = localStorage.getItem('rememberedEmail');
-    if (rememberedEmail) {
-      setEmail(rememberedEmail);
+    const rememberedUsername = localStorage.getItem('rememberedUsername');
+    if (rememberedUsername) {
+      setEmail(rememberedUsername);
       setRememberMe(true);
     }
   }, []);
@@ -81,17 +85,17 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-neutral-300 mb-1">
-                Email Address
+                Username
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
                 <input
-                  type="email"
+                  type="text"
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-background border border-neutral-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-neutral-200"
-                  placeholder="Enter your email"
+                  placeholder="Enter your username"
                   required
                 />
               </div>
