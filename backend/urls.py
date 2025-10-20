@@ -1,19 +1,45 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, re_path
 from authapp import views
+from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
-    path('api/auth/', include('authapp.urls')),
-    path('api/tournaments/', views.tournament_list, name='tournament-list'),
-    path('api/tournaments/<int:pk>/', views.tournament_detail, name='tournament-detail'),
-    path('api/tournaments/<int:pk>/join/', views.tournament_join, name='tournament-join'),
-    path('api/tournaments/<int:pk>/leave/', views.tournament_leave, name='tournament-leave'),
-    path('api/tournaments/user/', views.user_tournaments, name='user-tournaments'),
-    path('api/rewards/', views.reward_list, name='reward-list'),
-    path('api/rewards/claim/', views.reward_claim, name='reward-claim'),
-    path('api/rewards/user/', views.user_rewards, name='user-rewards'),
-    path('api/games/', views.game_list, name='game-list'),
-    path('api/games/<int:pk>/status/', views.game_update_status, name='game-update-status'),
-    path('api/dashboard/', views.dashboard_data, name='dashboard-data'),
+
+    # Auth APIs
+    path('auth/register/', views.register_view),
+    path('auth/login/', views.login_view),
+    path('auth/logout/', views.logout_view),
+    path('auth/user/', views.user_view),
+
+    # Tournament APIs
+    path('tournaments/', views.tournament_list),
+    path('tournaments/<int:pk>/', views.tournament_detail),
+    path('tournaments/<int:pk>/join/', views.tournament_join),
+    path('tournaments/<int:pk>/leave/', views.tournament_leave),
+    path('tournaments/user/', views.user_tournaments),
+
+    # Reward APIs
+    path('rewards/', views.reward_list),
+    path('rewards/claim/', views.reward_claim),
+    path('rewards/user/', views.user_rewards),
+
+    # Game APIs
+    path('games/', views.game_list),
+    path('games/<int:pk>/status/', views.game_update_status),
+
+    # Dashboard
+    path('dashboard/', views.dashboard_data),
+
+    # Catch-all: serves React frontend
+    re_path(r'^.*$', views.FrontendAppView.as_view(), name='frontend'),
 ]
+
+# Serve React assets in development
+if settings.DEBUG:
+    urlpatterns += static(
+        '/assets/',  # matches React build
+        document_root=settings.BASE_DIR / 'frontend' / 'dist' / 'assets'
+    )

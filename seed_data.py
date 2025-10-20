@@ -6,58 +6,70 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
 
 from django.contrib.auth.models import User
-from authapp.models import (
-    UserProfile, Tournament, Reward, Game
-)
+from authapp.models import UserProfile, Tournament, Reward, Game
 
 def seed_database():
     print("Seeding database with sample data...")
 
     users_created = []
 
-    if not User.objects.filter(username='testuser').exists():
-        user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123',
-            first_name='Test',
-            last_name='User'
-        )
-        user.profile.points = 150
-        user.profile.save()
-        users_created.append(user)
-        print(f"Created user: {user.username}")
+    # Create default users
+    default_users = [
+        {
+            'username': 'testuser',
+            'email': 'test@example.com',
+            'password': 'testpass123',
+            'first_name': 'Test',
+            'last_name': 'User',
+            'is_staff': False,
+            'is_superuser': False,
+            'role': 'user',
+            'points': 150
+        },
+        {
+            'username': 'admin',
+            'email': 'admin@example.com',
+            'password': 'admin123',
+            'first_name': 'Admin',
+            'last_name': 'User',
+            'is_staff': True,
+            'is_superuser': True,
+            'role': 'admin',
+            'points': 500
+        },
+        {
+            'username': 'host',
+            'email': 'host@example.com',
+            'password': 'host123',
+            'first_name': 'Host',
+            'last_name': 'User',
+            'is_staff': False,
+            'is_superuser': False,
+            'role': 'host',
+            'points': 300
+        }
+    ]
 
-    if not User.objects.filter(username='admin').exists():
-        admin_user = User.objects.create_user(
-            username='admin',
-            email='admin@example.com',
-            password='admin123',
-            first_name='Admin',
-            last_name='User',
-            is_staff=True,
-            is_superuser=True
-        )
-        admin_user.profile.role = 'admin'
-        admin_user.profile.points = 500
-        admin_user.profile.save()
-        users_created.append(admin_user)
-        print(f"Created admin user: {admin_user.username}")
+    for user_data in default_users:
+        if not User.objects.filter(username=user_data['username']).exists():
+            user = User.objects.create_user(
+                username=user_data['username'],
+                email=user_data['email'],
+                password=user_data['password'],
+                first_name=user_data['first_name'],
+                last_name=user_data['last_name'],
+                is_staff=user_data['is_staff'],
+                is_superuser=user_data['is_superuser']
+            )
+            # Ensure UserProfile exists
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            profile.role = user_data['role']
+            profile.points = user_data['points']
+            profile.save()
+            users_created.append(user)
+            print(f"Created user: {user.username}")
 
-    if not User.objects.filter(username='host').exists():
-        host_user = User.objects.create_user(
-            username='host',
-            email='host@example.com',
-            password='host123',
-            first_name='Host',
-            last_name='User'
-        )
-        host_user.profile.role = 'host'
-        host_user.profile.points = 300
-        host_user.profile.save()
-        users_created.append(host_user)
-        print(f"Created host user: {host_user.username}")
-
+    # Tournaments
     tournaments_data = [
         {
             'title': 'FIFA 24 Championship',
@@ -92,7 +104,6 @@ def seed_database():
     ]
 
     host_user = User.objects.filter(profile__role='host').first() or User.objects.first()
-
     for tournament_data in tournaments_data:
         if not Tournament.objects.filter(title=tournament_data['title']).exists():
             tournament = Tournament.objects.create(
@@ -101,6 +112,7 @@ def seed_database():
             )
             print(f"Created tournament: {tournament.title}")
 
+    # Rewards
     rewards_data = [
         {
             'title': 'Gaming Headset',
@@ -149,6 +161,7 @@ def seed_database():
             reward = Reward.objects.create(**reward_data)
             print(f"Created reward: {reward.title}")
 
+    # Games
     games_data = [
         {
             'title': 'Battle Arena Legends',
@@ -174,7 +187,6 @@ def seed_database():
     ]
 
     submitter = User.objects.first()
-
     for game_data in games_data:
         if not Game.objects.filter(title=game_data['title']).exists():
             game = Game.objects.create(

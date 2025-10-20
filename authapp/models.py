@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
+# ----------------------------
+# User Profile Model
+# ----------------------------
 class UserProfile(models.Model):
     ROLE_CHOICES = [
         ('user', 'User'),
@@ -14,22 +18,34 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
     avatar = models.URLField(blank=True, null=True)
-    points = models.IntegerField(default=0)
+    points = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.role}"
 
+    class Meta:
+        ordering = ['-created_at']
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
+    """Automatically create a UserProfile whenever a new User is registered."""
     if created:
         UserProfile.objects.create(user=instance)
 
+
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    """Ensure the UserProfile is saved when the User instance is updated."""
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
 
+
+# ----------------------------
+# Tournament Models
+# ----------------------------
 class Tournament(models.Model):
     STATUS_CHOICES = [
         ('upcoming', 'Upcoming'),
@@ -44,7 +60,7 @@ class Tournament(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     prize_pool = models.CharField(max_length=100, blank=True, null=True)
-    max_participants = models.IntegerField(default=100)
+    max_participants = models.PositiveIntegerField(default=100)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='upcoming')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tournaments')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -54,6 +70,7 @@ class Tournament(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
 
 class TournamentParticipant(models.Model):
     STATUS_CHOICES = [
@@ -73,15 +90,19 @@ class TournamentParticipant(models.Model):
         ordering = ['-joined_at']
 
     def __str__(self):
-        return f"{self.user.username} - {self.tournament.title}"
+        return f"{self.user.username} → {self.tournament.title}"
 
+
+# ----------------------------
+# Rewards Models
+# ----------------------------
 class Reward(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    points = models.IntegerField()
+    points = models.PositiveIntegerField()
     category = models.CharField(max_length=100)
     image_url = models.URLField(blank=True, null=True)
-    stock = models.IntegerField(default=0)
+    stock = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -90,6 +111,7 @@ class Reward(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
 
 class UserReward(models.Model):
     STATUS_CHOICES = [
@@ -109,6 +131,10 @@ class UserReward(models.Model):
     class Meta:
         ordering = ['-claimed_at']
 
+
+# ----------------------------
+# Game Models
+# ----------------------------
 class Game(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -133,6 +159,10 @@ class Game(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+
+# ----------------------------
+# User Activity Logs
+# ----------------------------
 class UserActivity(models.Model):
     ACTIVITY_TYPE_CHOICES = [
         ('registration', 'Registration'),
@@ -158,4 +188,4 @@ class UserActivity(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name_plural = 'User activities'
+        verbose_name_plural = 'User Activities'
